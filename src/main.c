@@ -38,25 +38,49 @@ void main(void)
 
     printk("LED blinking on %s pin %d\n", led.port->name, led.pin);
 
-    while (1) {
-        // Toggle do LED usando a nova API
+//cria uma enumeração de estados
+    enum estado_led {
+    ESTADO_VERDE,
+    ESTADO_AMARELO,
+    ESTADO_VERMELHO,
+    };
+    
 
-        //começa verde
-        gpio_pin_toggle_dt(&led_1); // desliga vermelho (verde ligado)
-        k_msleep(2*SLEEP_TIME_MS);
+//define um estado inicial (verde)
+    enum estado_led estado = ESTADO_VERDE;
 
-        //vira amarelo --> tempo menor
-        gpio_pin_toggle_dt(&led_1); // liga vermelho (verde ligado)
+while (1) {
+//loop infinito
+
+//faz mudança de estado
+    switch (estado) {
+
+    case ESTADO_VERDE:
+        // verde ligado, vermelho desligado
+        gpio_pin_set_dt(&led, 1);    // verde
+        gpio_pin_set_dt(&led_1, 0);  // vermelho
+
+        k_msleep(2 * SLEEP_TIME_MS);
+        estado = ESTADO_AMARELO;
+        break;
+
+    case ESTADO_AMARELO:
+        // verde ligado, vermelho ligado
+        gpio_pin_set_dt(&led, 1);    // verde
+        gpio_pin_set_dt(&led_1, 1);  // vermelho
+
         k_msleep(SLEEP_TIME_MS);
+        estado = ESTADO_VERMELHO;
+        break;
 
-        //vira vermelho
-        gpio_pin_toggle_dt(&led); // desliga verde (vermelho ligado)
-        k_msleep(2*SLEEP_TIME_MS);
+    case ESTADO_VERMELHO:
+        // verde desligado, vermelho ligado
+        gpio_pin_set_dt(&led, 0);    // verde
+        gpio_pin_set_dt(&led_1, 1);  // vermelho
 
-        //volta para ponto inicial (dois ligados)
-        gpio_pin_toggle_dt(&led); // liga verde (vermelho ligado)
-        //não tem atraso pois é uma mudança imediata
-        //reinicia o while sempre na mesma condição
-
+        k_msleep(2 * SLEEP_TIME_MS);
+        estado = ESTADO_VERDE;
+        break;
     }
+}
 }
